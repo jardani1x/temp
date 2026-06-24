@@ -8,6 +8,7 @@ import { Channel } from "./channels/Channel";
 import { createChannels } from "./channels";
 import { Pointer } from "./input";
 import { Bezel, BezelAction } from "./ui/bezel";
+import { showFatal } from "./ui/error";
 import { Frame, FxSettings } from "./types";
 import { wrapIndex } from "./util";
 
@@ -22,6 +23,7 @@ const DEFAULT_FX: FxSettings = {
 };
 
 export class App {
+  private root: HTMLElement;
   private canvas: HTMLCanvasElement;
   private gl: WebGL2RenderingContext;
   private pipeline: CRTPipeline;
@@ -41,6 +43,7 @@ export class App {
   private rafId = 0;
 
   constructor(root: HTMLElement) {
+    this.root = root;
     // The canvas can host a GL context while still detached from the DOM, which
     // lets us build the channels first and feed their real names to the bezel.
     this.canvas = document.createElement("canvas");
@@ -257,6 +260,19 @@ export class App {
 
   private loop = () => {
     if (!this.running) return;
+    try {
+      this.renderFrame();
+    } catch (err) {
+      // A GL/shader error at draw time would otherwise just freeze the canvas;
+      // stop the loop and surface it on screen instead.
+      this.running = false;
+      showFatal(this.root, err);
+      return;
+    }
+    this.rafId = requestAnimationFrame(this.loop);
+  };
+
+  private renderFrame() {
     const now = performance.now();
     const dt = Math.min((now - this.lastNow) / 1000, 0.05); // clamp big gaps
     this.lastNow = now;
@@ -283,7 +299,5 @@ export class App {
     channel.update(frame);
     channel.render(frame, this.pipeline.sceneTarget);
     this.pipeline.present(frame.time, dt, this.fx);
-
-    this.rafId = requestAnimationFrame(this.loop);
-  };
+  }
 }

@@ -36,15 +36,27 @@ export function createContext(canvas: HTMLCanvasElement): GL {
     );
   }
 
-  // Reaction-diffusion and other simulations render into floating-point
-  // targets; without this extension those framebuffers are "incomplete".
-  if (!gl.getExtension("EXT_color_buffer_float")) {
-    console.warn(
-      "[gl] EXT_color_buffer_float unavailable — the BLOOM station may not render.",
-    );
-  }
-
+  logContextInfo(gl);
   return gl;
+}
+
+/** Log GPU + capability info to the console — invaluable for diagnosing
+ *  device-specific rendering failures (especially WebKit/iOS). */
+function logContextInfo(gl: GL) {
+  try {
+    const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+    const renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : "(masked)";
+    const floatRender = !!gl.getExtension("EXT_color_buffer_float");
+    console.info(
+      "[CATHODE-88] WebGL2 ready\n" +
+        `  renderer: ${renderer}\n` +
+        `  version:  ${gl.getParameter(gl.VERSION)}\n` +
+        `  GLSL:     ${gl.getParameter(gl.SHADING_LANGUAGE_VERSION)}\n` +
+        `  float render targets (EXT_color_buffer_float): ${floatRender ? "yes" : "NO — BLOOM disabled"}`,
+    );
+  } catch {
+    /* diagnostics only — never let logging break boot */
+  }
 }
 
 /** Prefix every line of a shader with its number, so compiler errors line up. */

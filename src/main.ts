@@ -4,7 +4,7 @@
 
 import "./style.css";
 import { App } from "./app";
-import { GLError } from "./core/gl";
+import { showFatal } from "./ui/error";
 
 const root = document.getElementById("app");
 
@@ -15,12 +15,5 @@ if (!root) {
 try {
   new App(root);
 } catch (err) {
-  console.error("[CATHODE-88] failed to start:", err);
-  root.innerHTML = "";
-  const box = document.createElement("div");
-  box.className = "boot-error";
-  const detail = err instanceof GLError ? err.message : "The set failed to power on. See the console for details.";
-  box.appendChild(Object.assign(document.createElement("h1"), { textContent: "NO SIGNAL" }));
-  box.appendChild(Object.assign(document.createElement("pre"), { textContent: detail }));
-  root.appendChild(box);
+  showFatal(root, err);
 }
