@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="color-scheme" content="dark" />
+    <meta
+      name="description"
+      content="CATHODE-88 — a haunted broadcast you tune by hand. A generative-art television rendered through a multi-pass WebGL2 CRT pipeline."
+    />
+    <title>CATHODE-88 · haunted broadcast</title>
+  </head>
+  <body>
+    <!-- The TV set. Everything is built/managed from TypeScript so the markup
+         stays minimal; #app is the mount point for the bezel + screen. -->
+    <div id="app"></div>
+
+    <!-- No-WebGL2 fallback, revealed by main.ts if the context can't be made. -->
+    <noscript>
+      <p style="color:#fff;font-family:monospace;padding:2rem">
+        CATHODE-88 needs JavaScript and WebGL2 to broadcast.
+      </p>
+    </noscript>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "cathode-88",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "CATHODE-88 — a haunted broadcast you tune by hand. A generative-art television rendered through a multi-pass WebGL2 CRT pipeline.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2",
+    "vitest": "^2.0.5"
+  }
+}
