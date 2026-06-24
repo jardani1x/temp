@@ -12,7 +12,9 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main, master]
+    # Includes the current working branch (which is this repo's default branch)
+    # plus the usual mainlines. Trim to just your release branch after merging.
+    branches: [main, master, "claude/**"]
   workflow_dispatch:
 
 permissions:

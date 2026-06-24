@@ -108,20 +108,26 @@ than blank.
 
 ## Deploying to GitHub Pages
 
-The app is built with `base: "./"`, so it runs from a project subpath
+> ⚠️ **This is a Vite + TypeScript app — Pages must serve the _built_ output, not
+> the repo source.** If you point Pages at the branch **root**, it serves the
+> source `index.html`, whose `/src/main.ts` is TypeScript the browser can't run,
+> and you get a **blank page**. Use the GitHub Actions build below instead.
+
+The build uses `base: "./"`, so it runs from a project subpath
 (`https://<user>.github.io/<repo>/`) with no extra config.
 
-A workflow is included at `.github/workflows/deploy.yml`. To use it:
+A workflow is included at `.github/workflows/deploy.yml` that runs
+`npm ci && npm run build` and publishes `dist/`. To turn it on:
 
-1. In the repo, go to **Settings → Pages → Build and deployment** and set
-   **Source: GitHub Actions**.
-2. Push to the default branch (`main`/`master`) — or trigger the workflow manually
-   from the **Actions** tab (it has `workflow_dispatch`).
+1. **Settings → Pages → Build and deployment → Source: `GitHub Actions`.**
+   (This is the one manual step — it can't be set from a commit.)
+2. Push to the default branch / `main` / `master` (the workflow also runs on
+   `claude/**` branches), or trigger it from the **Actions** tab → *Deploy to
+   GitHub Pages* → **Run workflow**.
+3. The workflow's `deploy` step prints the live URL when it finishes.
 
-The workflow runs `npm ci && npm run build` and publishes `dist/`.
-
-You can also host the `dist/` folder on any static host (`npm run build`), or
-preview the production build locally with `npm run preview`.
+No build step locally — just open `npm run dev`. To see the exact production
+bundle, `npm run build && npm run preview`.
 
 ---
 
