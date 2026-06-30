@@ -68,6 +68,17 @@ describe("audio/video converter (ffmpeg)", () => {
     expect(await size(out.outputPath)).toBeGreaterThan(200);
     expect(out.mimeType).toBe("audio/mpeg");
   });
+
+  it.skipIf(!tools.ffmpeg)("converts a video -> animated GIF", async () => {
+    const { run } = await import("../src/server/util/exec.js");
+    const src = path.join(work, "clip.mp4");
+    await run("ffmpeg", [
+      "-y", "-f", "lavfi", "-i", "testsrc=size=160x120:rate=10:duration=1", src,
+    ]);
+    const out = await runConversion({ inputPath: src, originalName: "clip.mp4", to: "gif", outputDir: work });
+    expect((await magic(out.outputPath, 3)).toString("latin1")).toBe("GIF");
+    expect(out.mimeType).toBe("image/gif");
+  }, 60_000);
 });
 
 describe("markup converter (pandoc)", () => {

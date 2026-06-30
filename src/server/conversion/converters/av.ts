@@ -7,6 +7,8 @@ import { mimeFor } from "../../util/mime.js";
 
 const AUDIO = new Set<Format>(["mp3", "wav", "ogg", "opus", "flac", "aac", "m4a", "wma"]);
 const VIDEO = new Set<Format>(["mp4", "webm", "mkv", "mov", "avi", "flv", "wmv"]);
+// Animated image targets ffmpeg can produce from a video source.
+const VIDEO_IMAGE_OUT = new Set<Format>(["gif", "webp"]);
 
 function isAudio(f: Format) {
   return AUDIO.has(f);
@@ -22,6 +24,13 @@ function isVideo(f: Format) {
  */
 function targetArgs(to: Format, from: Format): string[] {
   switch (to) {
+    // ---- animated image (from video) ----
+    case "gif":
+      return ["-vf", "fps=12,scale=480:-1:flags=lanczos", "-loop", "0"];
+    case "webp":
+      return ["-c:v", "libwebp", "-vf", "fps=15,scale=640:-1:flags=lanczos", "-loop", "0", "-an", "-vsync", "0"];
+
+
     // ---- audio ----
     case "mp3":
       return ["-vn", "-c:a", "libmp3lame", "-q:a", "2"];
@@ -65,6 +74,9 @@ export const avConverter: Converter = {
   requiresTool: "ffmpeg",
 
   supports(from: Format, to: Format): boolean {
+    // Video -> animated image (GIF / animated WebP).
+    if (isVideo(from) && VIDEO_IMAGE_OUT.has(to)) return true;
+
     const fromAV = isAudio(from) || isVideo(from);
     const toAV = isAudio(to) || isVideo(to);
     if (!fromAV || !toAV) return false;

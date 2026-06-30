@@ -89,6 +89,10 @@ export const officeConverter: Converter = {
       await fs.rename(producedPath, outputPath);
     }
 
+    // The per-conversion profile is only needed during the run; reclaim it now
+    // rather than waiting for the job's TTL cleanup.
+    await fs.rm(profileDir, { recursive: true, force: true }).catch(() => {});
+
     return { outputPath, fileName, mimeType: mimeFor(to) };
   },
 };

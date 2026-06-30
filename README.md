@@ -63,7 +63,7 @@ The exact, live matrix is served at `GET /api/formats`. In summary:
 |-------------------|-------------------|----------|
 | **Images**        | sharp (libvips)   | jpg · png · webp · avif · gif · tiff · svg/heic (in) → any raster |
 | **Audio**         | ffmpeg            | mp3 · wav · ogg · opus · flac · aac · m4a · wma |
-| **Video**         | ffmpeg            | mp4 · webm · mkv · mov · avi · flv · wmv (+ video → audio) |
+| **Video**         | ffmpeg            | mp4 · webm · mkv · mov · avi · flv · wmv (+ video → audio, + video → animated GIF/WebP) |
 | **Documents**     | LibreOffice       | docx · doc · odt · rtf · txt · html → pdf and each other |
 | **Markup / books**| Pandoc            | md · html · rst · tex · epub ↔ docx · odt · rtf · txt |
 | **Spreadsheets**  | LibreOffice       | xlsx · xls · ods · csv → pdf and each other |
