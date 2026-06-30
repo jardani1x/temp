@@ -1,19 +1,33 @@
 {
-  "name": "cathode-88",
-  "private": true,
+  "name": "anyconv",
   "version": "1.0.0",
+  "description": "AnyConv — an open-source website that converts (almost) any file type to any other file type. Images, audio, video, documents, spreadsheets, slides, PDFs and data formats, with optional Stripe pay-per-conversion.",
+  "license": "MIT",
   "type": "module",
-  "description": "CATHODE-88 — a haunted broadcast you tune by hand. A generative-art television rendered through a multi-pass WebGL2 CRT pipeline.",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --port 4173",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "dev": "tsx watch src/server/index.ts",
+    "build": "tsc -p tsconfig.json && node scripts/copy-web.mjs",
+    "start": "node dist/server/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.34.4",
+    "stripe": "^17.5.0",
+    "yaml": "^2.6.1"
   },
   "devDependencies": {
-    "typescript": "^5.5.4",
-    "vite": "^5.4.2",
-    "vitest": "^2.0.5"
+    "@types/express": "^4.17.21",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.9"
   }
 }

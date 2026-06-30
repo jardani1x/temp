@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AnyConv — convert any file</title>
+    <meta
+      name="description"
+      content="Free, open-source file converter. Convert images, audio, video, documents, spreadsheets, presentations, PDFs and data formats right in your browser."
+    />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔄</text></svg>" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <h1>🔄 AnyConv</h1>
+        <p class="tagline">Convert (almost) any file to any format. Free &amp; open source.</p>
+      </header>
+
+      <section
+        id="dropzone"
+        class="dropzone"
+        tabindex="0"
+        role="button"
+        aria-label="Choose a file or drop it here"
+      >
+        <input id="fileInput" type="file" hidden />
+        <div class="dropzone-inner">
+          <div class="dz-icon">📁</div>
+          <p class="dz-title">Drop a file here</p>
+          <p class="dz-sub">or <span class="link">browse</span> from your device</p>
+        </div>
+      </section>
+
+      <section id="panel" class="panel" hidden>
+        <div class="file-row">
+          <div class="file-meta">
+            <span class="file-icon">📄</span>
+            <div>
+              <div id="fileName" class="file-name"></div>
+              <div id="fileInfo" class="file-info"></div>
+            </div>
+          </div>
+          <button id="resetBtn" class="ghost" type="button" aria-label="Remove file">✕</button>
+        </div>
+
+        <div class="convert-row">
+          <div class="fmt-from">
+            <label>From</label>
+            <div id="fromFmt" class="chip"></div>
+          </div>
+          <div class="arrow">→</div>
+          <div class="fmt-to">
+            <label for="toFmt">To</label>
+            <select id="toFmt" class="select"></select>
+          </div>
+        </div>
+
+        <button id="convertBtn" class="primary" type="button" disabled>Convert</button>
+        <p id="priceNote" class="price-note" hidden></p>
+      </section>
+
+      <section id="status" class="status" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <p id="statusText">Converting…</p>
+      </section>
+
+      <section id="result" class="result" hidden>
+        <div class="result-icon">✅</div>
+        <p id="resultText" class="result-text"></p>
+        <a id="downloadBtn" class="primary" download>Download</a>
+        <button id="payBtn" class="primary" type="button" hidden>Pay &amp; download</button>
+        <button id="againBtn" class="ghost" type="button">Convert another file</button>
+      </section>
+
+      <section id="error" class="error" hidden>
+        <p id="errorText"></p>
+        <button id="errorBack" class="ghost" type="button">Try again</button>
+      </section>
+
+      <footer class="foot">
+        <span id="capabilities"></span>
+        <a href="https://github.com" class="foot-link" id="repoLink" hidden>Source</a>
+      </footer>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
