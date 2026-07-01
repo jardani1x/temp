@@ -1,149 +1,182 @@
-# 📺 CATHODE‑88
+# 🔄 AnyConv
 
-### *a haunted broadcast you tune by hand*
+**An open-source website that converts (almost) any file type to any other file type.**
 
-CATHODE‑88 is a **fake retro television set that broadcasts generative art**. You
-don't click tabs — you *tune the dial*. Each "station" is a different real‑time
-generative system, and every one of them is rendered through a serious multi‑pass
-**WebGL2 CRT pipeline**: screen curvature, scanlines, an aperture‑grille subpixel
-mask, chromatic aberration, bloom, phosphor‑persistence ghosting, VHS tracking
-noise, and a burst of static every time you change the channel.
+Drop a file, pick a target format, download the result. Images, audio, video,
+documents, spreadsheets, presentations, PDFs and structured data — all from one
+dead-simple interface. Optional **Stripe pay-per-conversion** built in.
 
-It's vanilla **TypeScript + Vite + raw WebGL2** — no framework, ~45 kB of JS, one
-command to run.
+- 🧩 **Broad coverage** via best-in-class engines: `sharp`, `ffmpeg`,
+  `LibreOffice`, `Ghostscript` and `Pandoc`.
+- 🖱️ **Dead-simple UI** — drag, choose, download. The target dropdown only ever
+  shows formats that are actually reachable from your file.
+- 🔒 **Private by design** — files live in a temp dir and are auto-deleted after
+  a configurable TTL. No accounts, no database.
+- 💳 **Optional payments** — set a Stripe key to charge per file; leave it unset
+  to run completely free.
+- 🐳 **One-command deploy** with Docker (all engines bundled).
+
+---
+
+## Quick start
+
+### Run locally
+
+You need **Node.js ≥ 20** and the conversion tools on your `PATH`
+(`ffmpeg`, `soffice`/LibreOffice, `gs`/Ghostscript, `pandoc`). On Debian/Ubuntu:
+
+```bash
+sudo apt-get install -y ffmpeg ghostscript pandoc \
+  libreoffice-writer libreoffice-calc libreoffice-impress \
+  fonts-liberation fonts-dejavu-core
+```
+
+Then:
 
 ```bash
 npm install
-npm run dev      # open the printed http://localhost:5173 URL
+npm run dev          # development (auto-reload) → http://localhost:3000
+# or
+npm run build && npm start   # production
+```
+
+AnyConv degrades gracefully: if a tool is missing, the conversions that need it
+are simply hidden from the UI. Image and data conversions work with **zero**
+system dependencies (`sharp` and pure-JS).
+
+### Run with Docker (recommended)
+
+The image bundles every engine, so there's nothing else to install:
+
+```bash
+docker compose up --build
+# → http://localhost:3000
 ```
 
 ---
 
-## The stations
+## Supported conversions
 
-| # | Station   | What it is |
-|---|-----------|------------|
-| 1 | `SUNSET`  | The iconic vaporwave scene — banded sun, neon perspective grid, twinkling stars. Move the mouse to parallax it. |
-| 2 | `FLOW`    | Domain‑warped fractal noise drifting like ink. The cursor swirls the field; hold the button to intensify it. |
-| 3 | `PLASMA`  | Sum‑of‑sines demoscene plasma with a glowing oscilloscope Lissajous trace. Drag to re‑tune it. |
-| 4 | `BLOOM`   | A live **Gray‑Scott reaction‑diffusion** simulation. Paint new growth with the cursor. |
-| 5 | `LIFE`    | **Conway's Game of Life** with decaying phosphor heat‑trails. Draw to seed colonies. |
-| 6 | `DEADAIR` | The haunted "no signal" channel — television snow, ghost color bars, rolling sync bar. Tune left/right to find signal. |
+The exact, live matrix is served at `GET /api/formats`. In summary:
 
-## Controls
+| Category          | Engine            | Examples |
+|-------------------|-------------------|----------|
+| **Images**        | sharp (libvips)   | jpg · png · webp · avif · gif · tiff · svg/heic (in) → any raster |
+| **Audio**         | ffmpeg            | mp3 · wav · ogg · opus · flac · aac · m4a · wma |
+| **Video**         | ffmpeg            | mp4 · webm · mkv · mov · avi · flv · wmv (+ video → audio, + video → animated GIF/WebP) |
+| **Documents**     | LibreOffice       | docx · doc · odt · rtf · txt · html → pdf and each other |
+| **Markup / books**| Pandoc            | md · html · rst · tex · epub ↔ docx · odt · rtf · txt |
+| **Spreadsheets**  | LibreOffice       | xlsx · xls · ods · csv → pdf and each other |
+| **Presentations** | LibreOffice       | pptx · ppt · odp → pdf and each other |
+| **PDF**           | Ghostscript / built-in | pdf → png/jpg (multi-page → ZIP); any image → pdf |
+| **Data**          | pure JS           | json · yaml · csv · tsv · xml (interconvertible) |
 
-| Input | Action |
-|-------|--------|
-| **Drag on the screen** | Perturb the current station (swirl, paint, seed…) |
-| **← →**, scroll, or the **TUNE** dial | Change station |
-| **1 – 6** | Jump straight to a station |
-| **TRACKING / GLOW / SCANLINE / PERSIST / HUE** knobs | Dial the CRT look from clean signal → degraded haunted VHS |
-| **P** | Snap a photo — downloads the current frame as a PNG |
-| **R** | Shuffle the palette (hue) |
-| **S** | Reseed the current simulation |
-| **H** | Hide the set for a pure full‑screen broadcast |
-| **F** | Fullscreen · **Space** pause/resume · **?** help panel |
-
-Knobs respond to drag (up/down) and scroll. Everything has a keyboard equivalent.
+> Not every theoretical pair exists (you can't turn an MP3 into a video). The UI
+> only offers conversions that genuinely work, so you never hit a dead end.
 
 ---
 
-## How it works
+## Configuration
 
-Everything on screen is a **full‑screen fragment‑shader pass**. The render loop,
-each frame, does:
+All configuration is via environment variables (see [`.env.example`](.env.example)).
+Everything has a sensible default — the app runs with no configuration at all.
 
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3000` | HTTP port |
+| `PUBLIC_BASE_URL` | `http://localhost:$PORT` | Used for Stripe redirect URLs |
+| `MAX_UPLOAD_MB` | `200` | Maximum upload size |
+| `FILE_TTL_MINUTES` | `30` | How long converted files are kept |
+| `WORK_DIR` | `./tmp-uploads` | Temp working directory |
+| `FFMPEG_PATH` / `SOFFICE_PATH` / `GS_PATH` / `PANDOC_PATH` | from `PATH` | Override binary locations |
+| `STRIPE_SECRET_KEY` | — | Set to enable payments |
+| `STRIPE_WEBHOOK_SECRET` | — | For webhook signature verification |
+| `PRICE_AMOUNT` | `99` | Price per file (smallest currency unit, e.g. cents) |
+| `PRICE_CURRENCY` | `usd` | ISO currency code |
+
+### Enabling Stripe payments
+
+1. Create a [Stripe](https://stripe.com) account and grab your **secret key**.
+2. Set `STRIPE_SECRET_KEY` (and optionally `PRICE_AMOUNT` / `PRICE_CURRENCY`).
+3. (Recommended) Add a webhook endpoint pointing at
+   `https://your-domain/api/stripe/webhook` for the
+   `checkout.session.completed` event, and set `STRIPE_WEBHOOK_SECRET`.
+
+When a key is present, each converted file is held until the user completes
+Stripe Checkout; the download is then unlocked. Without a key, AnyConv runs in
+**free mode** and downloads are immediate.
+
+---
+
+## API
+
+| Method & path | Purpose |
+|---------------|---------|
+| `GET /api/formats` | Capabilities: formats, conversion matrix, tool status, pricing |
+| `POST /api/convert` | Multipart upload (`file`, `to`) → job info + download URL |
+| `GET /api/jobs/:id` | Job status (paid / download URL) |
+| `POST /api/checkout/:id` | Create a Stripe Checkout Session (paid mode) |
+| `GET /api/download/:id` | Download the converted file (payment-gated in paid mode) |
+| `POST /api/stripe/webhook` | Stripe webhook receiver |
+| `GET /healthz` | Health + tool status |
+
+Example:
+
+```bash
+curl -F "file=@photo.png" -F "to=webp" http://localhost:3000/api/convert
 ```
- active station ─► scene ─► bright-pass ─► blur ×2 ─► bloom
-                     │                                  │
-                     └───────────────┬──────────────────┘
-                                     ▼
-                       CRT composite (+ previous frame) ─► swap ─► blit to canvas
-                                     ▲
-                            phosphor persistence feedback
-```
 
-- **Stateless stations** (`SUNSET`, `FLOW`, `PLASMA`, `DEADAIR`) are a single
-  fragment shader.
-- **Simulation stations** (`BLOOM`, `LIFE`) are *ping‑pong* simulations: they read
-  last frame's state texture and write the next, then a display shader colors the
-  result. Reaction‑diffusion runs on a 16‑bit float texture; Life runs on an 8‑bit
-  grid with a decaying "heat" channel for the glow trails.
-- The **CRT pass** ties it together and owns the signature look. Phosphor
-  persistence is screen‑space feedback (this frame `max`’d against the last,
-  decayed), which is why motion leaves ghost trails.
+---
 
-### Project layout
+## Architecture
 
 ```
 src/
-  main.ts              boot + graceful "NO SIGNAL" error screen
-  app.ts               render loop, input wiring, channel switching, photo export
-  input.ts             pointer → UV-space tracking
-  util.ts              pure helpers (clamp, wrapIndex, mapRange) — unit-tested
-  types.ts             shared Frame / FxSettings types
-  style.css            the television set: bezel, knobs, glass, OSD, help panel
-
-  core/                tiny WebGL2 layer
-    gl.ts              context + shader compile/link with line-numbered errors
-    framebuffer.ts     render targets + ping-pong buffers
-    pass.ts            a full-screen ShaderPass with a typed uniform setter
-
-  shaders/             all GLSL (imported as ?raw and composed in index.ts)
-    common.glsl        shared noise / palette / color helpers
-    *.frag, *.glsl     one file per station + post-processing passes
-
-  channels/            station modules implementing the Channel interface
-  post/crt.ts          the CRT / bloom / persistence pipeline orchestrator
-  ui/                  knob.ts (rotary + tuner), bezel.ts (the set), osd.ts
+├── server/
+│   ├── index.ts              # Express app, static hosting, startup
+│   ├── config.ts             # env-driven configuration
+│   ├── jobs.ts               # in-memory job store + TTL cleanup
+│   ├── stripe.ts             # optional payment integration
+│   ├── routes/               # /api/* + Stripe webhook
+│   ├── util/                 # safe exec, mime, zip + image→pdf writers
+│   └── conversion/
+│       ├── registry.ts       # picks the best available converter for a pair
+│       ├── formats.ts        # format catalogue + alias normalisation
+│       └── converters/       # image · av · office · markup · pdf · data
+└── web/                      # static drag-and-drop frontend (no build step)
 ```
 
-There is no `#include` in GLSL ES, so `shaders/index.ts` is the single place that
-prepends the `#version` + precision header and the shared `common.glsl` helpers to
-each fragment body. Shader compile failures surface the **line‑numbered source**
-in the console and a "NO SIGNAL" card on screen, so problems are debuggable rather
-than blank.
+The **registry** is the heart of the system: each converter declares which
+`(from → to)` pairs it supports and which external tool it needs. At startup the
+server probes the tools, and `findConverter()` returns the first *available*
+converter for a requested pair. Reachable targets are computed per source format
+so the UI can only ever offer conversions that will succeed.
+
+### Adding a converter
+
+1. Create `src/server/conversion/converters/my.ts` exporting a `Converter`
+   (`name`, optional `requiresTool`, `supports()`, `convert()`).
+2. Register it in `src/server/conversion/registry.ts` (order = priority).
+3. Add any new formats to `src/server/conversion/formats.ts` and
+   `src/server/util/mime.ts`.
+4. Add a test in `test/`.
 
 ---
 
-## Deploying to GitHub Pages
+## Development
 
-> ⚠️ **This is a Vite + TypeScript app — Pages must serve the _built_ output, not
-> the repo source.** If you point Pages at the branch **root**, it serves the
-> source `index.html`, whose `/src/main.ts` is TypeScript the browser can't run,
-> and you get a **blank page**. Use the GitHub Actions build below instead.
+```bash
+npm run dev         # auto-reloading server
+npm run typecheck   # strict TypeScript check
+npm test            # unit + integration tests (vitest)
+npm run build       # compile to dist/ and copy the frontend
+```
 
-The build uses `base: "./"`, so it runs from a project subpath
-(`https://<user>.github.io/<repo>/`) with no extra config.
-
-A workflow is included at `.github/workflows/deploy.yml` that runs
-`npm ci && npm run build` and publishes `dist/`. To turn it on:
-
-1. **Settings → Pages → Build and deployment → Source: `GitHub Actions`.**
-   (This is the one manual step — it can't be set from a commit.)
-2. Push to the default branch / `main` / `master` (the workflow also runs on
-   `claude/**` branches), or trigger it from the **Actions** tab → *Deploy to
-   GitHub Pages* → **Run workflow**.
-3. The workflow's `deploy` step prints the live URL when it finishes.
-
-No build step locally — just open `npm run dev`. To see the exact production
-bundle, `npm run build && npm run preview`.
+Integration tests run real conversions through every engine and verify the
+output by magic bytes; engine tests auto-skip if a tool isn't installed.
 
 ---
 
-## Scripts
+## License
 
-| Command | Does |
-|---------|------|
-| `npm run dev` | Vite dev server with HMR |
-| `npm run build` | Type-check (`tsc --noEmit`) then production build to `dist/` |
-| `npm run preview` | Serve the production build locally |
-| `npm test` | Vitest unit tests (pure logic + shader‑composition sanity) |
-| `npm run typecheck` | Type-check only |
-
-## Requirements
-
-A browser with **WebGL2** (every current Chrome, Firefox, Edge, Safari 15+). The
-`BLOOM` station additionally needs the `EXT_color_buffer_float` extension, which is
-standard on those browsers. No network, accounts, or API keys — it runs entirely
-on your GPU.
+[MIT](LICENSE) — free to use, modify and self-host.

@@ -6,3 +6,7 @@ dist-ssr
 .vite
 coverage
 *.log
+.env
+.env.local
+/tmp-uploads
+/data
